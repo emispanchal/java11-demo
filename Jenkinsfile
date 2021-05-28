@@ -56,7 +56,46 @@ pipeline {
                 sh 'mvn package'
             }
         }
-    }
+         
+        stage ('publish to artifactory')  {
+
+            steps {
+
+            rtMavenResolver (
+            id: 'resolver',
+            serverId: 'artifactory1',
+            releaseRepo: 'libs-release',
+            snapshotRepo: 'libs-snapshot'
+             )  
+ 
+            rtMavenDeployer (
+            id: 'deployer1',
+            serverId: 'artifactory1',
+            releaseRepo: 'libs-release-local',
+            snapshotRepo: 'libs-snapshot-local',
+    // By default, 3 threads are used to upload the artifacts to Artifactory. You can override this default by setting:
+            
+    // Attach custom properties to the published artifacts:
+            properties: ['version=v1', 'publisher=emis']
+            )
+
+            rtMavenRun (
+            // Tool name from Jenkins configuration.
+            tool: 'm3',
+            pom: 'pom.xml',
+            goals: 'clean install',
+            // Maven options.
+            opts: '-Xms1024m -Xmx4096m',
+            resolverId: 'resolver',
+            deployerId: 'deployer1',
+            // If the build name and build number are not set here, the current job name and number will be used:
+            buildName: 'my-build-name',
+            buildNumber: '17',
+            // Optional - Only if this build is associated with a project in Artifactory, set the project key as follows.
+            project: 'my-project-key'
+            )
+            }
+        }
 
     post {
         always {
