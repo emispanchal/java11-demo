@@ -15,7 +15,7 @@ pipeline {
              booleanParam(name: 'RUN', defaultValue: true, description: 'SELECT TO RUN')
     }
     triggers {
-        pollSCM('* * * * *')
+        pollSCM
     }
     tools{
         maven  'm3'
